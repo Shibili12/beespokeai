@@ -1,4 +1,5 @@
 import 'package:beespokeai/model/product_models.dart';
+import 'package:beespokeai/views/cart_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -79,7 +80,10 @@ class ProductTile extends StatelessWidget {
                       borderRadius: BorderRadius.circular(25)),
                   backgroundColor: Colors.purple[400],
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => Cartscreen()));
+                },
                 child: Text("Add"),
               ),
             ]),
