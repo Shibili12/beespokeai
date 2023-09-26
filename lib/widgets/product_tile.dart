@@ -75,17 +75,18 @@ class ProductTile extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   )),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25)),
-                  backgroundColor: Colors.purple[400],
-                ),
+              IconButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => Cartpage()));
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text("added to cart")));
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => CartScreen(
+                          name: product.title!, price: '\$${product.price}')));
                 },
-                child: Text("Add"),
+                icon: Icon(
+                  Icons.shopping_cart,
+                  color: Colors.deepPurple,
+                ),
               ),
             ]),
           ],

@@ -1,203 +1,86 @@
 import 'package:beespokeai/controller/cart_controller.dart';
+import 'package:beespokeai/widgets/cartlist.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class Cartpage extends StatefulWidget {
-  const Cartpage({super.key});
+final CartController controller = Get.put(CartController());
 
-  @override
-  State<Cartpage> createState() => _CartpageState();
-}
+class CartScreen extends StatelessWidget {
+  String name;
+  String price;
+  CartScreen({
+    required this.name,
+    required this.price,
+  });
 
-class _CartpageState extends State<Cartpage> {
-  final CartController cartController = CartController();
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.deepPurple),
-        backgroundColor: Colors.grey[100],
-        centerTitle: true,
-        title: Text(
-          "Cart",
-          style: TextStyle(
-            color: Colors.deepPurple,
-            fontWeight: FontWeight.bold,
+    return WillPopScope(
+      onWillPop: controller.navigateToListItemScreen,
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.white,
+          centerTitle: true,
+          iconTheme: IconThemeData(color: Colors.deepPurple),
+          title: const Text(
+            "Cart",
+            style: TextStyle(color: Colors.deepPurple),
           ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: IconButton(
+                onPressed: controller.removeItems,
+                icon: const Icon(Icons.delete_forever),
+              ),
+            )
+          ],
         ),
-      ),
-      backgroundColor: Colors.grey[100],
-      body: Obx(() {
-        if (cartController.loading.value) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (cartController.cartItems.isEmpty) {
-          return Center(child: Text("No cart items found!"));
-        }
-        return Stack(
+        body: Column(
           children: [
-            Container(),
-            Positioned.fill(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: cartController.cartItems.length,
-                padding: EdgeInsets.all(8),
-                itemBuilder: (context, index) => Card(
-                  elevation: 0,
-                  child: Container(
-                    height: 110,
-                    padding: const EdgeInsets.all(8.0),
-                    width: 100,
-                    margin: EdgeInsets.all(4.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 100,
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: CachedNetworkImageProvider(cartController
-                                    .cartItems[index]["product"]["image"])),
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.all(8),
-                            child: Column(
+            Expanded(
+                child: Cartlistview(
+              name: name,
+              price: price,
+            )),
+            SizedBox(
+              height: 70,
+              child: Column(
+                children: [
+                  const Divider(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 50),
+                    child: Obx(
+                      () {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  cartController.cartItems[index]["product"]
-                                      ["title"],
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    cartController.cartItems[index]["product"]
-                                        ["description"],
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                  "Total",
                                 ),
                                 Text(
-                                  "\$${cartController.cartItems[index]["product"]["price"]}",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                  controller.price.value.toString(),
+                                )
                               ],
                             ),
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Container(
-                              height: 30,
-                              width: 30,
-                              color: Colors.grey[200],
-                              child: Center(
-                                child: IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.remove),
-                                  iconSize: 15,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(cartController.cartItems[index]
-                                      ["quantity"]
-                                  .toString()),
-                            ),
-                            Container(
-                              height: 30,
-                              width: 30,
-                              color: Colors.grey[200],
-                              child: IconButton(
-                                onPressed: () {},
-                                icon: Icon(Icons.add),
-                                iconSize: 15,
-                              ),
-                            ),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.deepPurple),
+                                onPressed: controller.isCheckOutButtonEnabled(),
+                                child: const Text("Check out"))
                           ],
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  ),
-                ),
+                  )
+                ],
               ),
-            ),
-            _buildBottom(),
-          ],
-        );
-      }),
-    );
-  }
-
-  Positioned _buildBottom() {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        height: 100,
-        color: Colors.white,
-        padding: const EdgeInsets.only(
-          left: 16.0,
-          right: 16,
-          bottom: 8.0,
-          top: 4.0,
-        ),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  "Subtotal",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "\$${cartController.subtotal}",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0,
-                      ),
-                    ),
-                    Text(
-                      "Subtotal does not include shipping",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12.0,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Expanded(
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text("Continue shopping"))),
+            )
           ],
         ),
       ),

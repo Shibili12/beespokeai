@@ -1,26 +1,78 @@
+import 'package:beespokeai/model/product_models.dart';
 import 'package:beespokeai/services/http_service.dart';
+import 'package:beespokeai/views/cart_page.dart';
+
+import 'package:beespokeai/widgets/cartlist.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class CartController extends GetxController {
-  HttpService cartService = HttpService();
-  var cartItems = [];
-  var loading = false.obs;
-  var subtotal = 0.0.obs;
+  var productList = [].obs;
+  bool isItemListScreen = true;
+  bool isCartScreen = false;
+  Rx<num> itemCount = 0.obs;
+  Rx<double> price = 0.0.obs;
 
-  CartController() {
-    loadCartFromApi();
-  }
-  loadCartFromApi() async {
-    loading(true);
-    var productsList = await cartService.loadCartFromApi();
+  // Widget navigateToCartScreen(BuildContext context) {
+  //   isCartScreen = true;
+  //   isItemListScreen = false;
+  //   calculatePrice();
+  //   return  CartScreen(
+  //     ,
+  //   );
+  // }
 
-    for (var i = 0; i < productsList.length; i++) {
-      var product =
-          await cartService.getProductFromApi(productsList[i]["productId"]);
-      subtotal(subtotal.value + product["price"] * productsList[i]["quantity"]);
-      cartItems
-          .add({"product": product, "quantity": productsList[i]["quantity"]});
+  countAllItems() {
+    itemCount.value = 0;
+    for (var element in productList) {
+      itemCount.value += element.count;
     }
-    loading(false);
+  }
+
+  calculatePrice() {
+    price.value = 0.0;
+    for (var element in productList) {
+      if (element.count > 0) {
+        price.value = (double.parse(element.price.replaceAll("\$", "").trim()) *
+                element.count) +
+            price.value;
+      }
+    }
+  }
+
+  Future<bool> navigateToListItemScreen() async {
+    isCartScreen = false;
+    isItemListScreen = true;
+    return true;
+  }
+
+  void increase(int index) {
+    productList[index].count++;
+    productList.refresh();
+    countAllItems();
+    calculatePrice();
+  }
+
+  void decrease(int index) {
+    if (productList[index].count > 0) {
+      productList[index].count--;
+      productList.refresh();
+      countAllItems();
+      calculatePrice();
+    }
+  }
+
+  void removeItems() {
+    for (var item in productList) {
+      item.count = 0;
+      productList.refresh();
+      itemCount.value = 0;
+      calculatePrice();
+    }
+  }
+
+  VoidCallback? isCheckOutButtonEnabled() {
+    if (itemCount > 0) return () {};
+    return null;
   }
 }
