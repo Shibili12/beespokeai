@@ -33,4 +33,17 @@ class HttpService {
       }
     }).catchError((err) => print(err));
   }
+
+  loadCartFromApi() async {
+    var response =
+        await http.get(Uri.parse("https://fakestoreapi.com/carts/1"));
+    var productsJson = json.decode(response.body);
+    return productsJson["products"];
+  }
+
+  Future getProductFromApi(productId) async {
+    var response = await http.get(
+        Uri.parse("https://fakestoreapi.com/products/" + productId.toString()));
+    return json.decode(response.body);
+  }
 }
